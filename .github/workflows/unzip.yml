@@ -1,0 +1,21 @@
+name: Unzip project
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip into repo root
+        run: |
+          ZIP=$(ls StreamVerse_Upd*.zip | head -1)
+          unzip -q "$ZIP" -d /tmp/sv
+          SRC=/tmp/sv; [ -d /tmp/sv/StreamVerse ] && SRC=/tmp/sv/StreamVerse
+          rsync -a --exclude='.github' "$SRC"/ ./
+          git rm -q "$ZIP"
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Add StreamVerse project"
+          git push
